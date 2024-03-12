@@ -1,40 +1,37 @@
 import os
 import matplotlib.pyplot as plt
 
+#Count number of images in each class
+def imagesInClass(directory):
+    classCounts = {}
 
-#Count number of images in each folder
-def count_images_in_classes(directory):
-    class_counts = {}
-
-    for class_name in os.listdir(directory):
-        class_path = os.path.join(directory, class_name)
-        
-        if os.path.isdir(class_path):
-            image_count = len([file for file in os.listdir(class_path) if file.endswith(('.jpg', '.png'))])
-            class_counts[class_name] = image_count
-
-    return class_counts
-
-#Bar graph parameters and values
-def plot_bar_graph(class_counts):
-    classes = list(class_counts.keys())
-    counts = list(class_counts.values())
-
-    plt.bar(classes, counts, color='blue')
-    plt.xlabel('Classes')
-    plt.ylabel('Number of Images')
-    plt.title('Image Counts in Each Class')
+    for className in os.listdir(directory):
+        classPath = os.path.join(directory, className)
+        if os.path.isdir(classPath):
+            imageCount = len([file for file in os.listdir(classPath) 
+                             if file.endswith('.jpg')])
+            classCounts[className] = imageCount
+    return classCounts
+    
+#Bar graph to plot 
+def plotBarGraph(classCounts):
+    classes = list(classCounts.keys())
+    counts = list(classCounts.values())
+    #variables and parameter of bar graph
+    plt.bar(classes,counts, color='green')
+    plt.xlabel("Classes")
+    plt.ylabel("Number of Images")
+    plt.title("Total Amount of Images in Each Class")
     plt.show()
 
+#To run python script
 if __name__ == "__main__":
-    #File path with all class folders
-    image_directory = 'Dataset\\train'
-
-    #display each classe count in terminal consol
-    class_counts = count_images_in_classes(image_directory)
-    print("Image counts in each class:")
-    for class_name, count in class_counts.items():
-        print(f"{class_name}: {count} images")
-
-    #diaplsy bar graph with image count
-    plot_bar_graph(class_counts)
+    #file path directory for all labelled classes
+    imageDirectory = 'Dataset\\train'
+    #Display total images per class in terminal
+    classCounts = imagesInClass(imageDirectory)
+    print("Total images in classes:")
+    for className, count in classCounts.items():
+        print(f"{className}:  {count} images")
+    #Display bar graph 
+    plotBarGraph(classCounts)
