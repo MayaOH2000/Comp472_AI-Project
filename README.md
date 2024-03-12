@@ -6,7 +6,7 @@ Maya Ostiguy Hopp - 40175258
 
 Laura Hang - 40203006
 
-Alina Rudani -
+Alina Rudani - 40202482
 
 **Extra Info**
 
