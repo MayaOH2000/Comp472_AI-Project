@@ -2,8 +2,9 @@
 
 from matplotlib import pyplot as plt
 import numpy as np
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,confusion_matrix, pair_confusion_matrix, precision_score
 from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
 from skorch import NeuralNetClassifier
 from torch.utils.data import DataLoader, random_split
 import torch
@@ -17,7 +18,7 @@ import torch.optim as optim
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 #path to save the model that is being train
-modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/Models/"
+modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"
 
 #Seting up the pretraining-process
 #Hyperparameters
@@ -37,8 +38,9 @@ transform = transforms.Compose(
 dataset = torchvision.datasets.ImageFolder(dataPath, transform=transform)
 
 #randomely spliting the datset into training and testing (80% for training and 20 % for testing)
+np.random.seed(0)   #ensure same split everytime since seed is set to 0
 m = len(dataset)
-trainData, testData = random_split(dataset, [int (m-m*0.2), int(m*0.2)])
+trainData, testData = random_split(dataset, [(m-int(m*0.2)), int(m*0.2)])
 trainLoader = DataLoader(trainData, batch_size=32, shuffle=True, num_workers=2)
 testLoader = DataLoader(testData, batch_size=32, shuffle=True, num_workers=2)
 
@@ -118,17 +120,29 @@ net = NeuralNetClassifier(
 )
 
 #model fitting
-y_train = np.array([np.int64(y) for x, y in iter(trainData)])
 net.fit(trainData, y=y_train)
 print("\nFinished Training!!")
-        
-#testing model that just been trained
+
+#saving the model
+torch.save(model.state_dict(), modelPath)   
+     
+#Evaluating model that just been trained
 y_predict = net.predict(testData)
 y_test = np.array([y for x, y in iter(testData)])
+
+accuracy = accuracy_score(y_test, y_predict)
+#precision = precision_score(y_test, y_predict)
+
 print('Accuracy for {} Dataset: {}%'.format('Test', round(accuracy_score(y_test, y_predict) * 100, 2)))
+
+#Printing report out for recall,precision, f1-score and accuracy of model
+print(classification_report(y_test, y_predict))
+
+
+
+#confusion matrix
 ConfusionMatrixDisplay.from_predictions(y_test, y_predict, display_labels=classes)
 plt.title('Confusion Matrix for {} Dataset'.format('Test'))
 plt.show()
 
-#saving the model
-torch.save(model.state_dict(), modelPath)
+
