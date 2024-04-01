@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import ConfusionMatrixDisplay
 from skorch import NeuralNetClassifier
-from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data import DataLoader, random_split
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -105,32 +105,6 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr = learningRate)
 
 #training modle
-# total_step = len(trainLoader)
-# loss_list = []
-# acc_list = []
-
-# for epoch in range(num_epochs):
-#  for i, (images, labels) in enumerate(trainLoader):
-
-#         # Forward pass
-#         outputs = model(images)
-#         loss = criterion(outputs, labels)
-#         loss_list.append(loss.item())
-
-#         # Backprop and optimisation
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-
-#         # Train accuracy
-#         total = labels.size(0)
-#         _, predicted = torch.max(outputs.data, 1)
-#         correct = (predicted == labels).sum().item()
-#         acc_list.append(correct / total)
-            
-#         print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f}%'
-#             .format(epoch + 1, num_epochs, i + 1, total_step, loss.item(),
-#             (correct / total) * 100))
 torch.manual_seed(0)
 net = NeuralNetClassifier(
     CNN(),
@@ -142,6 +116,8 @@ net = NeuralNetClassifier(
     device=device,
     iterator_train__shuffle=True
 )
+
+#model fitting
 y_train = np.array([np.int64(y) for x, y in iter(trainData)])
 net.fit(trainData, y=y_train)
 print("\nFinished Training!!")
@@ -153,19 +129,6 @@ print('Accuracy for {} Dataset: {}%'.format('Test', round(accuracy_score(y_test,
 ConfusionMatrixDisplay.from_predictions(y_test, y_predict, display_labels=classes)
 plt.title('Confusion Matrix for {} Dataset'.format('Test'))
 plt.show()
-
-
-# model.eval()
-# with torch.no_grad():
-#     correct = 0
-#     total = 0
-#     for images, labels in testLoader:
-#         outputs = model(images)
-#         _, predicted = torch.max(outputs.data, 1)
-#         total += labels.size(0)
-#         correct += (predicted == labels).sum().item()
-# print('Test Accuracy of the model on the test images: {} %'
-# .format((correct / total) * 100))
 
 #saving the model
 torch.save(model.state_dict(), modelPath)

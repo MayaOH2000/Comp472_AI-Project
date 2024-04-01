@@ -27,7 +27,7 @@ def plotBarGraph(classCounts):
 #To run python script
 if __name__ == "__main__":
     #file path directory for all labelled classes
-    imageDirectory = 'Dataset\\train'
+    imageDirectory = 'Dataset/train'
     #Display total images per class in terminal
     classCounts = imagesInClass(imageDirectory)
     print("Total images in classes:")
