@@ -88,7 +88,7 @@ net = NeuralNetClassifier(
 #model fitting
 net.fit(trainData, y=y_train)
 
-if early_stopping.did_stop_:
+if earlyStop.did_stop_:
     print("Early stopping occured")
 print("\nFinished Training!!")
 
