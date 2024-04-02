@@ -24,6 +24,7 @@ dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/C
 modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model1"
  
 #Set random seed to be the same each time to help with reproducability
+torch.manual_seed(0)
 np.random.seed(0)  
 
 #Seting up the pretraining-process
@@ -45,7 +46,7 @@ dataset = torchvision.datasets.ImageFolder(dataPath, transform=transform)
 
 #randomely spliting the datset into training and testing (80% for training and 20 % for testing)
 m = len(dataset)
-trainData, testData = random_split(dataset, [(m-int(m*0.2)), int(m*0.2)], random_state = 42)
+trainData, testData = random_split(dataset, [(m-int(m*0.2)), int(m*0.2)])
 trainLoader = DataLoader(trainData, batch_size=32, shuffle=False, num_workers=2)
 testLoader = DataLoader(testData, batch_size=32, shuffle=False, num_workers=2)
 
@@ -87,9 +88,6 @@ net = NeuralNetClassifier(
 
 #model fitting
 net.fit(trainData, y=y_train)
-
-if earlyStop.did_stop_:
-    print("Early stopping occured")
 print("\nFinished Training!!")
 
 #saving the model

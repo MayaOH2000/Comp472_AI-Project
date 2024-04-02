@@ -32,6 +32,7 @@ def evaluate(cnnModel, testData, classes ):
     plt.title('Confusion Matrix for {} Dataset'.format('Test'))
     plt.show()
 
-#restore / load model base on save path
-model = CNN()    
-model.load_state_dict(torch.load(loadModelPath))
+#To run python script
+if __name__ == "__main__":
+    
+    evaluate()
