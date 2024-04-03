@@ -97,7 +97,7 @@ net.fit(trainData, y=yTrain)
 print("\nFinished Training!!")
 
 
-#evaluationmof train model
+#evaluation of train model
 y_predict = net.predict(testData)
 y_test = np.array([y for x, y in iter(testData)])
 

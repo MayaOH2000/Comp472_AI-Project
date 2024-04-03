@@ -31,7 +31,7 @@ from skorch import NeuralNetClassifier
 import torch
 
 
-def evaluate(cnnModel, testData, classes ):  
+def evaluate(cnnModel, testData,trainData, classes ):  
     torch.manual_seed(0)
     net = NeuralNetClassifier(
         cnnModel,
@@ -45,9 +45,9 @@ def evaluate(cnnModel, testData, classes ):
     )
 
     #Evaluation with Test Data
-    net.fit(testData, y=yTest)
+    net.fit(trainData, y=yTrain)
     
-    #Evaluating model that just been trained
+    #Evaluating model
     y_predict = net.predict(testData)
     y_test = np.array([y for x, y in iter(testData)])
 
@@ -85,11 +85,11 @@ if __name__ == "__main__":
     #checking if user has cude to be able to use GPU instead of CPU for training
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    yTest = np.array ([y for x, y,in iter (testData)])
+    yTrain = np.array ([y for x, y,in iter (trainData)])
     classes = ("angry", "neutral", "engaged", "surpise")    #classes for classification
 
     #model = CNNV1() #variant 1
     #model = CNNV2() #variant 2
     model = CNN()
     model.load_state_dict(torch.load(loadModelPath))
-    evaluate(model,testData,classes)
+    evaluate(model,testData,trainData,classes)
