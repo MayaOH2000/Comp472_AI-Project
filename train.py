@@ -23,7 +23,7 @@ from cnnModel import CNNV2
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 #path to save the model that is being train
-modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"
+modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"
  
 #Set random seed to be the same each time to help with reproducability
 torch.manual_seed(0)
@@ -65,8 +65,8 @@ Showing the accuracy of the model on the test dataset.
 
 #creating an instance of the cnn model created from above
 #model = CNNV1() #train with variant 1
-model = CNNV2() #train with variant 2
-#model = CNN()   #train with main
+#model = CNNV2() #train with variant 2
+model = CNN()   #train with main
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr = learningRate)
 
@@ -89,8 +89,8 @@ net = NeuralNetClassifier(
 )
 
 #Tested with train data
-print(trainData.dataset)
-print(yTrain.shape)
+# print("\n",trainData.dataset)
+# print("\n",yTrain.shape)
 
 #model fitting
 net.fit(trainData, y=yTrain)

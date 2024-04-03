@@ -88,10 +88,8 @@ class CNNV1(nn.Module):
     def forward(self, x):
         # conv layers
         x = self.conv_layer(x)
-        print(x.size())
         #flatten
         x = x.view(x.size(0), -1)
-        print(x.size())
         #fc layer
         x = self.fc_layer(x)
         return x
@@ -107,7 +105,7 @@ class CNNV2(nn.Module):
         nn.Conv2d(in_channels=32, out_channels=32, kernel_size=4, padding=1),
         nn.BatchNorm2d(32),
         nn.LeakyReLU(inplace=True),
-        nn.MaxPool2d(kernel_size=2, stride=2),
+        nn.MaxPool2d(kernel_size=4, stride=2),
 
         nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, padding=1),
         nn.BatchNorm2d(64),
@@ -115,11 +113,11 @@ class CNNV2(nn.Module):
         nn.Conv2d(in_channels=64, out_channels=64, kernel_size=4, padding=1),
         nn.BatchNorm2d(64),
         nn.LeakyReLU(inplace=True),
-        nn.MaxPool2d(kernel_size=2, stride=2),
+        nn.MaxPool2d(kernel_size=4, stride=2),
         )
         self.fc_layer = nn.Sequential(
         nn.Dropout(p=0.1),
-        nn.Linear(6 * 6 * 64, 1000),  
+        nn.Linear(5184, 1000),  #48/2/2 = 12
         nn.ReLU(inplace=True),
         nn.Linear(1000, 512),
         nn.ReLU(inplace=True),
@@ -129,8 +127,11 @@ class CNNV2(nn.Module):
     def forward(self, x):
         # conv layers
         x = self.conv_layer(x)
+        # print("Output after convolutions:", x.size())
         #flatten
         x = x.view(x.size(0), -1)
+        # print("Flattened output:", x.size())
         #fc layer
         x = self.fc_layer(x)
+        # print("Output after fully connected layers:", x.size())
         return x
