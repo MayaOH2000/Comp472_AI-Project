@@ -14,14 +14,16 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.datasets
 import torch.optim as optim
-from cnnModel import CNN
+from cnnModel import CNN 
+from cnnModel import CNNV1
+from cnnModel import CNNV2
 
 
 #data directory for local computer for dataset
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 #path to save the model that is being train
-modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model1"
+modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"
  
 #Set random seed to be the same each time to help with reproducability
 torch.manual_seed(0)
@@ -47,13 +49,11 @@ dataset = torchvision.datasets.ImageFolder(dataPath, transform=transform)
 #randomely spliting the datset into training and testing (80% for training and 20 % for testing)
 m = len(dataset)
 trainData, testData = random_split(dataset, [(m-int(m*0.2)), int(m*0.2)])
-trainLoader = DataLoader(trainData, batch_size=32, shuffle=False, num_workers=2)
-testLoader = DataLoader(testData, batch_size=32, shuffle=False, num_workers=2)
 
 #checking if user has cude to be able to use GPU instead of CPU for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-y_train = np.array ([y for x, y,in iter (trainData)])
+yTrain = np.array ([y for x, y,in iter (trainData)])
 classes = ("angry", "neutral", "engaged", "surpise")    #classes for classification
 
 """
@@ -64,7 +64,9 @@ Showing the accuracy of the model on the test dataset.
 """
 
 #creating an instance of the cnn model created from above
-model = CNN()
+#model = CNNV1() #train with variant 1
+model = CNNV2() #train with variant 2
+#model = CNN()   #train with main
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr = learningRate)
 
@@ -77,7 +79,7 @@ bestFit= Checkpoint(monitor='valod_loss_best', fn_prefix="best_")
 #training modle
 torch.manual_seed(0)
 net = NeuralNetClassifier(
-    CNN(),
+    model,
     max_epochs=num_epochs,
     lr=learningRate,
     batch_size=batchSize,
@@ -86,16 +88,36 @@ net = NeuralNetClassifier(
     device=device
 )
 
+#Tested with train data
+print(trainData.dataset)
+print(yTrain.shape)
+
 #model fitting
-net.fit(trainData, y=y_train)
+net.fit(trainData, y=yTrain)
 print("\nFinished Training!!")
+
+
+#evaluationmof train model
+y_predict = net.predict(testData)
+y_test = np.array([y for x, y in iter(testData)])
+
+accuracy_score(y_test, y_predict)
+print('Accuracy for {} Dataset: {}%'.format('Test', round(accuracy_score(y_test, y_predict) * 100, 2)))
+
+#Printing report out for recall,precision, f1-score and accuracy of model
+print(classification_report(y_test, y_predict))
 
 #saving the model
 torch.save(model.state_dict(), modelPath) 
 
 #svaing best model
 best_model = modelPath + "_best.pth"
-torch.save(net.get_best_model(), best_model)
+torch.save(model.state_dict(), best_model)
+
+#confusion matrix
+ConfusionMatrixDisplay.from_predictions(y_test, y_predict, display_labels=classes)
+plt.title('Confusion Matrix for {} Dataset'.format('Test'))
+plt.show()
 
 
 
