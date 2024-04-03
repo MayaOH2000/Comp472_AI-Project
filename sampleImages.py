@@ -22,16 +22,10 @@ def plotImageGrid(images, title):
             imgPath = images[i]
             image = imageResize(imgPath)
             _.imshow(image, cmap='gray')
-            # #plot histogram graph under image
-            # pixale = list(image.getdata())
-            # hisAxis = fig.add_axes([_.get_position().x0, _.get_position().y0 - 0.1, _.get_position().width,0.1])
-            # hisAxis.hist(pixale, 256 , [0,256], True)
-            # hisAxis.axis('off')
 
     plt.tight_layout(rect=[0,0,1,1]) #padding layout of plot grid   
     # plt.hist(list(image.getdata()),256,[0,256], True)
     plt.show()
-
 
 def plotHistogram(images, title):
     fig, axes = plt.subplots(5,5,figsize=(8.5,11))
@@ -52,7 +46,6 @@ def plotHistogram(images, title):
     plt.tight_layout(rect=[0,0,0.9,1]) #padding layout of plot grid   
     plt.show()
 
-
 def getRandomImages(classPath,imageNumber = 25):
     imageFile = [file for file in os.listdir(classPath) 
                  if file.endswith ('.jpg')]
@@ -69,6 +62,6 @@ def displayRandomImages(datasetPath):
             plotHistogram(randomImages, f"Histogram from 5 x 5 grid from {className}")
 
 if __name__ == "__main__":
-    datasetPath = "Dataset\\train"
+    datasetPath = "Dataset/train"
     #Display grid for each class
     displayRandomImages(datasetPath)
