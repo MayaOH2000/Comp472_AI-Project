@@ -1,16 +1,21 @@
 from matplotlib import pyplot as plt
-import numpy as np
-from sklearn.metrics import accuracy_score,confusion_matrix, precision_score
+from sklearn.metrics import accuracy_score, make_scorer, precision_score,recall_score,f1_score
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_validate
 from skorch import NeuralNetClassifier
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import random_split
+from skorch.helper import SliceDataset
+from sklearn.model_selection import KFold
+
+import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.datasets
 import torch.optim as optim
+
 from cnnModel import CNN
 from cnnModel import CNNV1
 from cnnModel import CNNV2
@@ -23,14 +28,7 @@ loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Proj
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
-import numpy as np
-from skorch import NeuralNetClassifier
-import torch
-
-
+"""Evaluation with Confusion Matrix"""
 def evaluate(cnnModel, testData,trainData, classes ):  
     torch.manual_seed(0)
     net = NeuralNetClassifier(
@@ -40,8 +38,9 @@ def evaluate(cnnModel, testData,trainData, classes ):
         batch_size=32,
         optimizer=optim.Adam,
         criterion=nn.CrossEntropyLoss,
+        verbose=0,  #supress training process output
         device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+        
     )
 
     #Evaluation with Test Data
@@ -62,6 +61,57 @@ def evaluate(cnnModel, testData,trainData, classes ):
     plt.title('Confusion Matrix for {} Dataset'.format('Test'))
     plt.show()
  
+"""K-fold Cross-Validate with k = 10 folds"""
+#Takes a long time to compute
+def kFoldCrossValidation(cnnModel,trainData,yTrain,k = 10):
+    torch.manual_seed(0)
+    net = NeuralNetClassifier(
+        cnnModel,
+        max_epochs=10,
+        lr=0.001,
+        batch_size=32,
+        optimizer=optim.Adam,
+        criterion=nn.CrossEntropyLoss,
+        #verbose=0, #supress training process output
+        device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+    )
+    
+    #net.fit(trainData, y=yTrain)
+    yTrain = torch.tensor(yTrain).long()
+    train_sliceable = SliceDataset(trainData)
+
+    kf= KFold(n_splits=k, shuffle=True, random_state=0)
+
+    #dictonary to store score values for k-fold values 
+    #macro average
+    scoringMacro = {"accuracy": make_scorer(accuracy_score),
+               "precision": make_scorer(precision_score, average="macro") ,
+               "recall": make_scorer(recall_score, average="macro"),
+               "f1": make_scorer(f1_score, average="macro"),
+               }
+    #micro averaging
+    scoringMicro = {"accuracy": make_scorer(accuracy_score),
+               "precision": make_scorer(precision_score, average="micro") ,
+               "recall": make_scorer(recall_score, average="micro"),
+               "f1": make_scorer(f1_score, average="micro"),
+               }
+    
+    scoresMacro = cross_validate(net, train_sliceable, yTrain, cv=kf, scoring=scoringMacro)
+    scoresMicro = cross_validate(net, train_sliceable, yTrain, cv=kf, scoring=scoringMicro)
+    
+    #prints out all k-fold values
+    #Macro scores
+    print("Macro scores:")
+    for metrics, values in scoresMacro.items():
+        print(f"{metrics.capitalize()} scores: \n{values}")
+
+    #Micro scores
+    print("\nMicro scores:")
+    for metrics, values in scoresMicro.items():
+        print(f"{metrics.capitalize()} scores: \n{values}")
+
+   
 #To run python script
 if __name__ == "__main__":
     #Set random seed to be the same each time to help with reproducability
@@ -92,4 +142,5 @@ if __name__ == "__main__":
     #model = CNNV2() #variant 2
     model = CNN()
     model.load_state_dict(torch.load(loadModelPath))
-    evaluate(model,testData,trainData,classes)
+    # evaluate(model,testData,trainData,classes)
+    kFoldCrossValidation(model,trainData,yTrain,k=10)

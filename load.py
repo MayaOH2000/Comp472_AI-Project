@@ -1,17 +1,11 @@
-from matplotlib import pyplot as plt
-import numpy as np
-from sklearn.metrics import accuracy_score,confusion_matrix, precision_score
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import classification_report
-from skorch import NeuralNetClassifier
-from torch.utils.data import DataLoader, random_split
 import torch
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.datasets
-import torch.optim as optim
 from PIL import Image
+from torch.utils.data import DataLoader
+
 from cnnModel import CNN
 from cnnModel import CNNV1
 from cnnModel import CNNV2
