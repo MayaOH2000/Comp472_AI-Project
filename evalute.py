@@ -26,39 +26,38 @@ loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Proj
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv1"   #V1
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"   #V2
 
+#best fit models
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model_best.pth"   #main model
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv1_best.pth"   #V1
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2_best.pth"   #V2
+
+
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 
 """Evaluation with Confusion Matrix"""
-def evaluate(cnnModel, testData,trainData, classes ):  
-    torch.manual_seed(0)
-    net = NeuralNetClassifier(
-        cnnModel,
-        max_epochs=10,
-        lr=0.001,
-        batch_size=32,
-        optimizer=optim.Adam,
-        criterion=nn.CrossEntropyLoss,
-        verbose=0,  #supress training process output
-        device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
-    )
-
+def evaluate(cnnModel,testLoader, classes ):  
     #Evaluation with Test Data
-    net.fit(trainData, y=yTrain)
-    
-    #Evaluating model
-    y_predict = net.predict(testData)
-    y_test = np.array([y for x, y in iter(testData)])
+    cnnModel.eval()
+    yTest = []
+    yPredict = []
 
-    accuracy_score(y_test, y_predict)
-    print('Accuracy for {} Dataset: {}%'.format('Test', round(accuracy_score(y_test, y_predict) * 100, 2)))
+    with torch.no_grad():
+        for images, labels in testLoader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs.data, 1)
+            yTest.extend(labels.detach().cpu().numpy())
+            yPredict.extend(predicted.detach().cpu().numpy())
 
     #Printing report out for recall,precision, f1-score and accuracy of model
-    print(classification_report(y_test, y_predict))
+    print(classification_report(yTest, yPredict))
+
+    #accuracy for test
+    print("Accuracy for {} Dataset: {}%" .format("Test" , round(accuracy_score(yTest,yPredict)*100,2)))
 
     #confusion matrix
-    ConfusionMatrixDisplay.from_predictions(y_test, y_predict, display_labels=classes)
+    ConfusionMatrixDisplay.from_predictions(yTest, yPredict, display_labels=classes)
     plt.title('Confusion Matrix for {} Dataset'.format('Test'))
     plt.show()
  
@@ -153,5 +152,5 @@ if __name__ == "__main__":
     model = CNN()
     model.load_state_dict(torch.load(loadModelPath))
 
-    # evaluate(model,testData,trainData,classes)
+    evaluate(model,testLoader,classes)
     # kFoldCrossValidation(model,trainData,yTrain,k=10)

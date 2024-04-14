@@ -25,9 +25,9 @@ from cnnModel import CNNV2
 dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
 
 #path to save the model that is being train
-#modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"    #main
+modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"    #main
 #modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv1"   #V1
-modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"   #V2
+#modelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"   #V2
 
 if __name__ == "__main__": 
     #Set random seed to be the same each time to help with reproducability
@@ -78,8 +78,8 @@ if __name__ == "__main__":
 
     #creating an instance of the cnn model created from above
     #model = CNNV1() #train with variant 1
-    model = CNNV2() #train with variant 2
-    #model = CNN()   #train with main
+    #model = CNNV2() #train with variant 2
+    model = CNN()   #train with main
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = learningRate)
