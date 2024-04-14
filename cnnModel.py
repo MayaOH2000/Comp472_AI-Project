@@ -6,7 +6,7 @@ import torch.nn as nn
 Creating neural netwrok architecture here.
 Data set image format for images is 48 x 48 grayscale (black and white).
 """
-#2 conventlution networks, kernel = 3 x 3 
+#2 blocks  (4 convulutional layers ), kernel = 3 x 3 
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
@@ -45,7 +45,7 @@ class CNN(nn.Module):
         x = self.fc_layer(x)
         return x
     
-#Variant 1 with 3 layers and k = 3 x 3
+#Variant 1 with 3 block (6 convulutional layers) and k = 3 x 3
 class CNNV1(nn.Module):
     def __init__(self):
         super(CNNV1, self).__init__()
@@ -94,30 +94,30 @@ class CNNV1(nn.Module):
         x = self.fc_layer(x)
         return x
 
-#Variant two with 2 layer and kenerl = 4 x 4
+#Variant two with 2 blocks (4 convulutional layers) and kenerl = 5 x 5
 class CNNV2(nn.Module):
     def __init__(self):
         super(CNNV2, self).__init__()
         self.conv_layer = nn.Sequential(
-        nn.Conv2d(in_channels=1, out_channels=32, kernel_size=4, padding=1),    # channel = 1 for gray scale
+        nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, padding=1),    # channel = 1 for gray scale
         nn.BatchNorm2d(32),
         nn.LeakyReLU(inplace=True),
-        nn.Conv2d(in_channels=32, out_channels=32, kernel_size=4, padding=1),
+        nn.Conv2d(in_channels=32, out_channels=32, kernel_size=5, padding=1),
         nn.BatchNorm2d(32),
         nn.LeakyReLU(inplace=True),
-        nn.MaxPool2d(kernel_size=4, stride=2),
+        nn.MaxPool2d(kernel_size=5, stride=2),
 
-        nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, padding=1),
+        nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, padding=1),
         nn.BatchNorm2d(64),
         nn.LeakyReLU(inplace=True),
-        nn.Conv2d(in_channels=64, out_channels=64, kernel_size=4, padding=1),
+        nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, padding=1),
         nn.BatchNorm2d(64),
         nn.LeakyReLU(inplace=True),
-        nn.MaxPool2d(kernel_size=4, stride=2),
+        nn.MaxPool2d(kernel_size=5, stride=2),
         )
         self.fc_layer = nn.Sequential(
         nn.Dropout(p=0.1),
-        nn.Linear(5184, 1000),  #48/2/2 = 12
+        nn.Linear(64 *6*6, 1000),  #48/2/2 = 12
         nn.ReLU(inplace=True),
         nn.Linear(1000, 512),
         nn.ReLU(inplace=True),

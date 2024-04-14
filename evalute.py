@@ -5,6 +5,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_validate
 from skorch import NeuralNetClassifier
 from torch.utils.data import random_split
+from torch.utils.data import DataLoader
 from skorch.helper import SliceDataset
 from sklearn.model_selection import KFold
 
@@ -128,19 +129,29 @@ if __name__ == "__main__":
     #getting dataset for model to train on
     dataset = torchvision.datasets.ImageFolder(dataPath, transform=transform)
 
-    #randomely spliting the datset into training and testing (80% for training and 20 % for testing)
+    #randomely spliting the datset into training and testing (70% for training, 20 % for testing and 10% for validation)
     m = len(dataset)
-    trainData, testData = random_split(dataset, [(m-int(m*0.2)), int(m*0.2)])
+    trainSize = int(0.7*m)
+    testSize = int(0.1*m)
+    valSize = m - trainSize - testSize
+    trainData, testData, valData = random_split(dataset, [trainSize,testSize,valSize])
 
-    #checking if user has cude to be able to use GPU instead of CPU for training
+    #Data Loader
+    #allow random order for loading data (shuffle = true) and use 2 subprocess to load data
+    trainLoader = DataLoader(trainData, batch_size=32, shuffle=True, num_workers=2)
+    testLoader = DataLoader(testData, batch_size=32, shuffle=False, num_workers=2)
+    valLoader = DataLoader(valData, batch_size=32, shuffle=False, num_workers=2)
+
+    #checking if user has cuda to be able to use GPU instead of CPU for training
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    yTrain = np.array ([y for x, y,in iter (trainData)])
+    #yTrain = np.array ([y for x, y,in iter (trainData)])
     classes = ("angry", "neutral", "engaged", "surpise")    #classes for classification
 
     #model = CNNV1() #variant 1
     #model = CNNV2() #variant 2
     model = CNN()
     model.load_state_dict(torch.load(loadModelPath))
+
     # evaluate(model,testData,trainData,classes)
-    kFoldCrossValidation(model,trainData,yTrain,k=10)
+    # kFoldCrossValidation(model,trainData,yTrain,k=10)
