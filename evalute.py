@@ -22,9 +22,13 @@ from cnnModel import CNNV2
 from train import train
 
 #change path to match data path and model to evaluate
-loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"   #main model
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model"   #main model
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv1"   #V1
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"   #V2
+
+#trying to mitigate bias
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelBias"    #main no bias?
+loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelBias_best.pth"
 
 #best fit models
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model_best.pth"   #main model
@@ -34,9 +38,19 @@ loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Proj
 
 modelPath1 = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model2"    #main
 
+#Data sets
+#Original
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"    #orignal
 
-dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"
+#bias
+#age
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/age-bias-train/middle"    #age/middle
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/age-bias-train/senior"    #age/senior
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/age-bias-train/young"    #age/young
 
+#gender 
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/gender/Female"   #gender/Female
+dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/gender/Male"     #gender/Male
 
 """Evaluation with Confusion Matrix"""
 def evaluate(cnnModel,testLoader, classes ):  
@@ -65,6 +79,92 @@ def evaluate(cnnModel,testLoader, classes ):
     plt.show()
  
 """K-fold Cross-Validate with k = 10 folds"""
+
+def trainKFold(model, trainLoader, valLoader, criterion, optimizer, device, num_epochs, patience = 5):
+     #Early stopping variables
+    bestValLoss = float('inf')
+    patience = 5
+    noImprovementCount = 0
+
+    #Best fit variables
+    #best-fit save path
+    # bestModel = modelPath + "_best.pth"
+
+    #training model
+    #training loop
+    for epoch in range(num_epochs):
+        #training phase
+        model.train()  
+        trainCorrect = 0
+        trainTotal = 0
+        trainLoss = 0.0
+        for i, (images,labels) in enumerate(trainLoader):
+            images, labels = images.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            #train loss
+            trainLoss += loss.item() * images.size(0)
+
+            #train accuarcy
+            _, trainPredicted = torch.max(outputs.data, 1)
+            trainTotal += labels.size(0)
+            trainCorrect += (trainPredicted == labels).sum().item()
+
+
+         #training accuracy and loss for each epoch
+        trainAccuracy = trainCorrect/trainTotal
+        trainLoss /= len(trainLoader.dataset)
+
+        #validating train model and save best fit model
+        model.eval()
+        valLoss = 0.0
+        valCorrect = 0
+        valTotal = 0
+
+        for images, labels in valLoader:
+            with torch.no_grad():
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+                #val loss
+                valLoss += loss.item() * images.size(0)
+
+                #val accuracy
+                _, predicted = torch.max(outputs.data, 1)
+                valTotal += labels.size(0)
+                valCorrect += (predicted == labels).sum().item()
+
+        #validation results for each epoch
+        valLoss /= len(valLoader.dataset)
+        valAccuracy = valCorrect/valTotal
+
+        #print results for each epoch
+        print(f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {trainLoss:.4f}, Validation Loss: {valLoss:.4f}, "
+              f"Training Accuracy: {trainAccuracy * 100:.2f}%, Validation Accuracy: {valAccuracy*100:.2f}%")
+        
+        #best fit checking
+        if valLoss < bestValLoss:
+            bestValLoss = valLoss
+            #save best-fit model
+            # torch.save(model.state_dict(), bestModel)
+            noImprovementCount = 0
+        else:
+            noImprovementCount += 1
+
+        #Early stopping
+        if noImprovementCount > patience:
+            print("*** Early Stopping Happened! ****")
+            break
+
+    # #saving the final model
+    # torch.save(model.state_dict(), modelPath)
+     
+    print("\n ++++++ Training Complete!! +++++ ")
+
 #Takes a long time to compute
 def kFoldCrossValidation(cnnModel,trainData,valLoader,k = 10):
     
@@ -90,16 +190,16 @@ def kFoldCrossValidation(cnnModel,trainData,valLoader,k = 10):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)
 
-    print("===========================================")
     #k-fold loop
     for fold, (trainIndex, _) in enumerate(kf.split(trainData),1): #start it at 1 
+        print("===========================================")
         print(f"Fold {fold}/ {k}:")
         print("========================================")
         trainSet = Subset(trainData, trainIndex) #creates subset of train data for eack k fold
         trainLoader = DataLoader(trainSet, batch_size=32, shuffle=True, num_workers=2)
         
         #train the model
-        train(cnnModel, trainLoader,valLoader,criterion,optimizer,device, num_epochs, modelPath1)
+        trainKFold(cnnModel, trainLoader,valLoader,criterion,optimizer,device, num_epochs)
 
         #evalute 
         cnnModel.eval()
@@ -134,10 +234,10 @@ def kFoldCrossValidation(cnnModel,trainData,valLoader,k = 10):
             #printing k-fold results 
             #Macro
             print("Macro Values: ")
-            print(f"Validation Loss {valLoss / len (valLoader):.4f}, Accuracy: {accuracy *100:.2f}%, "
+            print(f"Validation Loss {valLoss / len (valLoader.dataset):.4f}, Accuracy: {accuracy *100:.2f}%, "
                   f"Precision: {precision:.2f}, Recall: {recall:.2f}, F1-Score: {f1:.2f}")
             
-            #Metrics Calculations icro
+            #Metrics Calculations micro
             accuracyMic = accuracy_score(yTrue, yPredict)
             precisionMic = precision_score (yTrue, yPredict, average='micro')
             recallMic = recall_score (yTrue, yPredict, average='micro')
@@ -146,7 +246,7 @@ def kFoldCrossValidation(cnnModel,trainData,valLoader,k = 10):
             #printing k-fold results 
             #Macro
             print("\nMicro Values: ")
-            print(f"Validation Loss {valLoss / len (valLoader):.4f}, Accuracy: {accuracyMic *100:.2f}%, "
+            print(f"Validation Loss {valLoss / len (valLoader.dataset):.4f}, Accuracy: {accuracyMic *100:.2f}%, "
                   f"Precision: {precisionMic:.2f}, Recall: {recallMic:.2f}, F1-Score: {f1Mic:.2f}")
 
 
@@ -161,73 +261,27 @@ def kFoldCrossValidation(cnnModel,trainData,valLoader,k = 10):
             microRecall += recallMic
             microF1 += f1Mic
 
-            #average values of total folds
-            averageMacroAccuracy = accuracy/k
-            averageMacroPrecision = precision/k
-            averageMacroRecall = recall/k
-            averageMacroF1 = f1/k
+    #average values of total folds
+    averageMacroAccuracy = macroAccuracy/k
+    averageMacroPrecision = macroPrecision/k
+    averageMacroRecall = macroRecall/k
+    averageMacroF1 = macroF1/k
 
-            averageMicroAccuracy = accuracyMic/k
-            averageMicroPrecision = precisionMic/k
-            averageMicroRecall = recallMic/k
-            averageMicroF1 = f1Mic/k
+    averageMicroAccuracy = microAccuracy/k
+    averageMicroPrecision = microPrecision/k
+    averageMicroRecall = microRecall/k
+    averageMicroF1 = microF1/k
 
-        #print K-fold cross validation
-        print(f"K-Fold Cross Validation Average Results for {k} Folds")
-        print("===============================================")
-        print("Macro Averages: ")
-        print(f"Accuracy: {averageMacroAccuracy *100:.2f}%, Precision: {averageMacroPrecision:.2f}, "
-              f"Recall: {averageMacroRecall:.2f}, F1-Score: {averageMacroF1:.2f}")
+    #print K-fold cross validation
+    print(f"\nK-Fold Cross Validation Average Results for {k} Folds")
+    print("===============================================")
+    print("Macro Averages: ")
+    print(f"Accuracy: {averageMacroAccuracy *100:.2f}%, Precision: {averageMacroPrecision:.2f}, "
+          f"Recall: {averageMacroRecall:.2f}, F1-Score: {averageMacroF1:.2f}")
 
-        print("\nMicro Average Values: ")
-        print(f"Accuracy: {averageMicroAccuracy *100:.2f}%, Precision: {averageMicroPrecision:.2f}, "
-              f"Recall: {averageMicroRecall:.2f}, F1-Score: {averageMicroF1:.2f}")
-
-
-            # #store Macro values
-            # macroAccuracy.append(accuracy)
-            # macroPrecision.append(precision)
-            # macroRecall.append(recall)
-            # macroF1.append(f1)
-
-            # #Micro values metrics
-            # microAccuracy.append(accuracy_score(yTrue,yPredict))
-            # microPrecision.append(precision_score (yTrue, yPredict, average='micro'))
-            # microRecall.append(recall_score (yTrue, yPredict, average='micro'))
-            # microF1.append(f1_score (yTrue, yPredict, average='micro'))
-
-
-    # train_sliceable = SliceDataset(trainData)
-
-    # kf= KFold(n_splits=k, shuffle=True, random_state=0)
-
-    # #dictonary to store score values for k-fold values 
-    # #macro average
-    # scoringMacro = {"accuracy": make_scorer(accuracy_score),
-    #            "precision": make_scorer(precision_score, average="macro") ,
-    #            "recall": make_scorer(recall_score, average="macro"),
-    #            "f1": make_scorer(f1_score, average="macro"),
-    #            }
-    # #micro averaging
-    # scoringMicro = {"accuracy": make_scorer(accuracy_score),
-    #            "precision": make_scorer(precision_score, average="micro") ,
-    #            "recall": make_scorer(recall_score, average="micro"),
-    #            "f1": make_scorer(f1_score, average="micro"),
-    #            }
-    
-    # scoresMacro = cross_validate(net, train_sliceable, yTrain, cv=kf, scoring=scoringMacro)
-    # scoresMicro = cross_validate(net, train_sliceable, yTrain, cv=kf, scoring=scoringMicro)
-    
-    # #prints out all k-fold values
-    # #Macro scores
-    # print("Macro scores:")
-    # for metrics, values in scoresMacro.items():
-    #     print(f"{metrics.capitalize()} scores: \n{values}")
-
-    # #Micro scores
-    # print("\nMicro scores:")
-    # for metrics, values in scoresMicro.items():
-    #     print(f"{metrics.capitalize()} scores: \n{values}")
+    print("\nMicro Average Values: ")
+    print(f"Accuracy: {averageMicroAccuracy *100:.2f}%, Precision: {averageMicroPrecision:.2f}, "
+          f"Recall: {averageMicroRecall:.2f}, F1-Score: {averageMicroF1:.2f}")
 
    
 #To run python script
@@ -243,7 +297,7 @@ if __name__ == "__main__":
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,))])
 
-    #getting dataset for model to train on
+    #getting dataset for model to be evaluated on
     dataset = torchvision.datasets.ImageFolder(dataPath, transform=transform)
 
     #randomely spliting the datset into training and testing (70% for training, 20 % for testing and 10% for validation)
@@ -270,5 +324,5 @@ if __name__ == "__main__":
     model = CNN()
     model.load_state_dict(torch.load(loadModelPath))
 
-    #evaluate(model,testLoader,classes)
-    kFoldCrossValidation(model,trainData,valLoader, k=10)
+    evaluate(model,testLoader,classes)
+    #kFoldCrossValidation(model,trainData,valLoader, k=10)
