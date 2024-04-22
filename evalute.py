@@ -27,7 +27,8 @@ from train import train
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelv2"   #V2
 
 #trying to mitigate bias
-loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelBias"    #main no bias?
+#loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelBias"    #main no bias?
+loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/modelBias_best.pth"
 
 #best fit models
 #loadModelPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Models/model_best.pth"   #main model
@@ -39,7 +40,7 @@ modelPath1 = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project
 
 #Data sets
 #Original
-dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"    #orignal
+#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/train"    #orignal
 
 #bias
 #age
@@ -49,7 +50,7 @@ dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/C
 
 #gender 
 #dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/gender/Female"   #gender/Female
-#dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/gender/Male"     #gender/Male
+dataPath = "C:/Users/mayao/Desktop/Comp 472 - Artificiall intelligence/Project/Comp472_AI-Project/Dataset/gender/Male"     #gender/Male
 
 """Evaluation with Confusion Matrix"""
 def evaluate(cnnModel,testLoader, classes ):  
