@@ -10,7 +10,7 @@ Alina Rudani - 40202482
 
 **Extra Info**
 
-The folder called dataset contains all the data that will be used for this project. The train folder contains all the training data and the test folder contains all the test data. Each folder label represents a different class. In total, we have 4 different classes which are neutral, surprise, focused/engaged and angry.
+The folder called dataset contains all the data that will be used for this project. The train folder contains all the training data and the age and gender are the bias folder with sub categories in them that are split into the 4 emotions categories. Each folder label represents a different class. In total, we have 4 different classes which are neutral, surprise, focused/engaged and angry. The folder called age-bias-train was used to test to see if there was a bias for the age category ; midle,young and senior. The folder called age is used to store addition images, if we needed to add new images to the age categories to try to mitigate the bias in the model.
 
 The folder called Models contains all the models that have been trainined using the train.py file. The model with the betd.pth at the end represent the besfit model from training.
 
